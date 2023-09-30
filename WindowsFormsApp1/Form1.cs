@@ -34,9 +34,20 @@ namespace WindowsFormsApp1
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                string apiUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" + text;
+                // 确定输入文本的语言（假设中文为源语言）
+                string sourceLanguage = "zh-CN";
+                string targetLanguage = "en";
+
+                // 如果输入文本包含英文字母，则将源语言和目标语言互换
+                if (!IsChinese(text))
+                {
+                    sourceLanguage = "en";
+                    targetLanguage = "zh-CN";
+                }
+
+                string apiUrl = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sourceLanguage}&tl={targetLanguage}&dt=t&q=" + text;
                 HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
-                Console.WriteLine(response.Content);
+
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
@@ -59,7 +70,20 @@ namespace WindowsFormsApp1
                     return "翻译失败";
                 }
             }
-            
+        }
+        bool IsChinese(string text)
+        {
+            foreach (char c in text)
+            {
+                // 检查字符是否在中文的 Unicode 范围内
+                if (c >= '\u4e00' && c <= '\u9fff')
+                {
+                    return true; // 包含中文字符
+                }
+            }
+            return false; // 不包含中文字符
         }
     }
+    
+    
 }
